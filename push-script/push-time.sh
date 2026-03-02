@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # ------------------------------------------------------------
-# Auto Git Push Script
+# Auto Git Push With Time Script
 # Author: Porkeat
 # Description:
 #   - Automatically updates "Last Updated" field in README.md

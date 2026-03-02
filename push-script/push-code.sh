@@ -1,6 +1,27 @@
 #!/bin/bash
+#
+# ------------------------------------------------------------
+# Auto Git Commit & Push Script
+# Author: Porkeat
+# Description:
+#   - Detects the current Git branch dynamically
+#   - Stages all changes automatically
+#   - Shows staged files with color-coded status (Added, Modified, Deleted)
+#   - Prompts for a commit message or accepts one as an argument
+#   - Commits all changes
+#   - Pushes to the remote branch and sets upstream if needed
+#   - Works in Bash, Zsh, and can be run from Fish via `bash script.sh`
+#
+# Usage:
+#   ./push.sh
+#   ./push.sh "Your custom commit message"
+# ------------------------------------------------------------
 
-# Modern color output using tput (more portable)
+set -e  # Exit immediately if a command exits with a non-zero status
+
+# -----------------------------
+# Setup Colors
+# -----------------------------
 setup_colors() {
     if [[ -t 1 ]] && command -v tput > /dev/null 2>&1; then
         GREEN=$(tput setaf 2)
@@ -16,52 +37,66 @@ setup_colors() {
 
 setup_colors
 
-# Print functions for better formatting
-print_info() { echo -e "${BLUE}ℹ️${NC} $1"; }
+# -----------------------------
+# Print functions
+# -----------------------------
+print_info()    { echo -e "${BLUE}ℹ️${NC} $1"; }
 print_success() { echo -e "${GREEN}✓${NC} $1"; }
 print_warning() { echo -e "${YELLOW}⚠️${NC} $1"; }
-print_error() { echo -e "${RED}✗${NC} $1"; }
-print_header() { echo -e "\n${BOLD}${BLUE}$1${NC}"; }
+print_error()   { echo -e "${RED}✗${NC} $1"; }
+print_header()  { echo -e "\n${BOLD}${BLUE}$1${NC}"; }
 
-# Check if we're in a git repository
+# -----------------------------
+# Check Git repository
+# -----------------------------
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     print_error "Not a git repository"
     exit 1
 fi
 
+# -----------------------------
 # Get current branch
+# -----------------------------
 current_branch=$(git branch --show-current)
 print_info "Current branch: ${BOLD}${current_branch}${NC}"
 
-# Show current status
+# -----------------------------
+# Show Git status
+# -----------------------------
 print_header "Git Status"
 git status --short
 
-# Check if there are any changes to commit
+# -----------------------------
+# Check for changes
+# -----------------------------
 if git diff-index --quiet HEAD -- 2>/dev/null; then
     print_warning "No changes to commit"
     exit 0
 fi
 
-# Get commit message (from argument or prompt)
+# -----------------------------
+# Get commit message
+# -----------------------------
 commit_message="$*"
-
 if [ -z "$commit_message" ]; then
     echo ""
-    read -p "Enter commit message: " commit_message
-    
+    read -r -p "Enter commit message: " commit_message
     if [ -z "$commit_message" ]; then
         print_error "Commit message cannot be empty"
         exit 1
     fi
 fi
 
-# Add all changes
+# -----------------------------
+# Stage all changes
+# -----------------------------
 print_header "Staging Changes"
 git add .
 print_success "All changes staged"
 
-# Show what will be committed
+# -----------------------------
+# Show staged files
+# -----------------------------
 print_header "Files to be committed"
 git diff --cached --name-status | while IFS= read -r line; do
     status="${line:0:1}"
@@ -74,7 +109,9 @@ git diff --cached --name-status | while IFS= read -r line; do
     esac
 done
 
+# -----------------------------
 # Commit
+# -----------------------------
 print_header "Committing"
 if git commit -m "$commit_message"; then
     print_success "Commit successful!"
@@ -83,15 +120,16 @@ else
     exit 1
 fi
 
+# -----------------------------
 # Ask to push
+# -----------------------------
 echo ""
-echo -e "${BLUE}Push to ${BOLD}origin/$current_branch${NC}${BLUE}? (y/n):${NC}"
-read -r push_confirm
+read -r -p "$(echo -e "${BLUE}Push to ${BOLD}origin/$current_branch${NC}${BLUE}? (y/n):${NC} ")" push_confirm
 
 if [[ "$push_confirm" =~ ^[Yy]$ ]]; then
     print_header "Pushing to Remote"
     
-    # Check if upstream branch exists
+    # Check if upstream exists
     if git rev-parse --verify "origin/$current_branch" > /dev/null 2>&1; then
         if git push origin "$current_branch"; then
             print_success "Successfully pushed to origin/$current_branch"

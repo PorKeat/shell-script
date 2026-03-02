@@ -1,4 +1,22 @@
 #!/bin/bash
+#
+# ------------------------------------------------------------
+# Auto Git Commit, Push & Tag Script
+# Author: Porkeat
+# Description:
+#   - Detects the current Git branch dynamically
+#   - Stages all changes automatically
+#   - Shows staged files with color-coded status (Added, Modified, Deleted)
+#   - Prompts for a commit message or accepts one as an argument
+#   - Commits all changes
+#   - Pushes to the remote branch and sets upstream if needed
+#   - Dynamically creates and pushes a new semantic version tag
+#   - Works in Bash, Zsh, and can be run from Fish via `bash script.sh`
+#
+# Usage:
+#   ./push.sh
+#   ./push.sh "Your custom commit message"
+# ------------------------------------------------------------
 
 latest_tag=$(git describe --tags --abbrev=0 2>/dev/null)
 
