@@ -13,8 +13,6 @@
 #   ./push.sh
 #   ./push.sh "Your custom commit message"
 #
-# Date Format Example:
-#   02 March 2026 - 10:15 AM
 # ------------------------------------------------------------
 
 # Use Cambodia timezone
